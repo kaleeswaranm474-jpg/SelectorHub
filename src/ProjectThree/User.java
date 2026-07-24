@@ -2,55 +2,68 @@ package ProjectThree;
 
 public class User {
 
-    private String username;
+    private String voterId;
+    private String userName;
     private String password;
+    private int age;
+    private String phoneNumber;
     private boolean voted;
 
-
     // Constructor
+    public User(String voterId,
+                String userName,
+                String password,
+                int age,
+                String phoneNumber) {
 
-    public User(String username, String password) {
-
-        this.username = username;
+        this.voterId = voterId;
+        this.userName = userName;
         this.password = password;
+        this.age = age;
+        this.phoneNumber = phoneNumber;
         this.voted = false;
     }
 
+    // Getters
 
-    // Getter Methods
-
-    public String getUsername() {
-
-        return username;
+    public String getVoterId() {
+        return voterId;
     }
 
+    public String getUserName() {
+        return userName;
+    }
 
     public String getPassword() {
-
         return password;
     }
 
+    public int getAge() {
+        return age;
+    }
+
+    public String getPhoneNumber() {
+        return phoneNumber;
+    }
 
     public boolean isVoted() {
-
         return voted;
     }
 
-
-
-    // Update Vote Status
+    // Setter
 
     public void setVoted(boolean voted) {
-
         this.voted = voted;
     }
 
-
-
+    @Override
     public String toString() {
 
-        return "Username : " + username +
-               "\nVoted    : " + voted;
+        return "\n========== USER DETAILS ==========" +
+               "\nVoter ID      : " + voterId +
+               "\nName          : " + userName +
+               "\nAge           : " + age +
+               "\nPhone Number  : " + phoneNumber +
+               "\nVoted         : " + (voted ? "Yes" : "No");
     }
-
 }

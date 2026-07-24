@@ -1,18 +1,23 @@
 package ProjectTwo;
 
 import java.time.LocalDate;
+import java.util.ArrayList;
 
 
 public class TicketBooking {
 
 
+    private String bookingId;
+
     private Movie movie;
 
     private Customer customer;
 
-    private int row;
 
-    private int seat;
+    // Multiple seats store
+
+    private ArrayList<String> seats;
+
 
     private LocalDate bookingDate;
 
@@ -21,24 +26,57 @@ public class TicketBooking {
 
     // Constructor
 
-    public TicketBooking(Movie movie,
+    public TicketBooking(String bookingId,
+                         Movie movie,
                          Customer customer,
-                         int row,
-                         int seat,
+                         ArrayList<String> seats,
                          LocalDate bookingDate) {
 
+
+        this.bookingId = bookingId;
 
         this.movie = movie;
 
         this.customer = customer;
 
-        this.row = row;
-
-        this.seat = seat;
+        this.seats = seats;
 
         this.bookingDate = bookingDate;
 
     }
+
+
+
+
+
+    // Getter Methods
+
+
+    public String getBookingId() {
+
+        return bookingId;
+
+    }
+
+
+
+
+    public Customer getCustomer() {
+
+        return customer;
+
+    }
+
+
+
+
+    public ArrayList<String> getSeats() {
+
+        return seats;
+
+    }
+
+
 
 
 
@@ -48,7 +86,31 @@ public class TicketBooking {
     public void cancelTicket() {
 
 
-        movie.getSeats()[row][seat] = false;
+        for(String seat : seats) {
+
+
+
+            char rowName = seat.charAt(0);
+
+
+            int seatNumber =
+                    Integer.parseInt(
+                    seat.substring(1));
+
+
+
+            int row = rowName - 'A';
+
+
+            int column = seatNumber - 1;
+
+
+
+            movie.getSeats()[row][column] = false;
+
+
+        }
+
 
     }
 
@@ -57,24 +119,28 @@ public class TicketBooking {
 
 
 
-    // Display Booking Details
+    // Display Ticket Details
+
 
     public String toString() {
 
 
-        return "Customer Name : "
+
+        return "\nBooking ID    : " + bookingId
+
+                + "\nCustomer Name : "
                 + customer.getCustomerName()
 
-                + "\nMovie Name : "
+                + "\nMovie Name    : "
                 + movie.getMovieName()
 
-                + "\nRow : "
-                + (row+1)
+                + "\nSeats         : "
+                + seats
 
-                + "\nSeat : "
-                + (seat+1)
+                + "\nTotal Seats   : "
+                + seats.size()
 
-                + "\nBooking Date : "
+                + "\nBooking Date  : "
                 + bookingDate;
 
     }
