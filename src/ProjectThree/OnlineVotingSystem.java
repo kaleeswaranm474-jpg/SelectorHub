@@ -19,6 +19,22 @@ public class OnlineVotingSystem {
 
 
     // ==============================
+    // Safe Integer Reader (crash-proof)
+    // ==============================
+
+    static int readInt() {
+
+        if(sc.hasNextInt()) {
+
+            return sc.nextInt();
+        }
+
+        sc.next();   // discard the invalid (non-numeric) token
+        return -1;   // sentinel value; -1 never matches a valid menu/ID
+    }
+
+
+    // ==============================
     // Default Tamil Nadu Candidates
     // ==============================
 
@@ -105,9 +121,10 @@ public class OnlineVotingSystem {
 
         System.out.println("\n========== ADMIN MODULE ==========");
         System.out.println("1. Add Candidate");
-        System.out.println("2. View Candidates");
-        System.out.println("3. View Result");
-        System.out.println("4. Logout");
+        System.out.println("2. Remove Candidate");
+        System.out.println("3. View Candidates");
+        System.out.println("4. View Result");
+        System.out.println("5. Logout");
         System.out.print("Enter Your Choice : ");
 
     }
@@ -130,24 +147,85 @@ public class OnlineVotingSystem {
         System.out.print("Enter User Name : ");
         String userName = sc.nextLine();
 
-        System.out.print("Enter Age : ");
-        int age = sc.nextInt();
+        int age;
 
-        if(age < 21) {
+        while(true) {
+
+            System.out.print("Enter Age : ");
+
+            if(sc.hasNextInt()) {
+
+                age = sc.nextInt();
+
+                if(age > 0) {
+                    break;
+                }
+
+                System.out.println("Invalid Age. Please Enter A Positive Number.");
+
+            } else {
+
+                System.out.println("Invalid Age. Please Enter A Number.");
+                sc.next();
+            }
+        }
+
+        if(age < 18) {
             System.out.println("You are not eligible to vote.");
             return;
         }
 
-        sc.nextLine();
+        // Logical Duplicate Check: same Name + Age already registered
+        for(User u : users.values()) {
 
-        System.out.print("Enter Phone Number : ");
-        String phone = sc.nextLine();
+            if(u.getUserName().equalsIgnoreCase(userName)
+                    &&
+               u.getAge() == age) {
 
-        if(!phone.matches("[6-9][0-9]{9}")) {
-            System.out.println("Invalid Phone Number.");
-            return;
+                System.out.println("User Already Registered (Same Name & Age Found).");
+                return;
+            }
         }
-        
+
+        String phone;
+
+        while(true) {
+
+            System.out.print("Enter Phone Number (10 digits) : ");
+            String enteredNumber = sc.next();
+
+            if(enteredNumber.matches("[6-9][0-9]{9}")) {
+
+                String candidatePhone = "+91" + enteredNumber;
+
+                boolean duplicatePhone = false;
+
+                for(User u : users.values()) {
+
+                    if(u.getPhoneNumber().equals(candidatePhone)) {
+                        duplicatePhone = true;
+                        break;
+                    }
+                }
+
+                if(duplicatePhone) {
+
+                    System.out.println("This Phone Number Is Already Registered.");
+
+                } else {
+
+                    phone = candidatePhone;
+                    break;
+                }
+
+            } else {
+
+                System.out.println("Invalid Phone Number.");
+                System.out.println("Phone number must be 10 digits starting with 6/7/8/9");
+            }
+        }
+
+        sc.nextLine();
 
         System.out.print("Enter Password : ");
         String password = sc.nextLine();
@@ -243,6 +321,14 @@ public class OnlineVotingSystem {
         viewCandidates();
 
         System.out.print("Enter Candidate ID : ");
+
+        if(!sc.hasNextInt()) {
+
+            System.out.println("Invalid Candidate ID (must be a number).");
+            sc.next();
+            return;
+        }
+
         int id = sc.nextInt();
 
         for(Candidate candidate : candidates) {
@@ -298,10 +384,42 @@ public class OnlineVotingSystem {
             }
         }
 
+        // Check if more than one candidate shares the highest vote count
+        int tieCount = 0;
+
+        for(Candidate candidate : candidates) {
+
+            if(candidate.getVotes() == winner.getVotes()) {
+
+                tieCount++;
+            }
+        }
+
         System.out.println("\n==============================");
-        System.out.println("Winner : " + winner.getCandidateName());
-        System.out.println("Party  : " + winner.getPartyName());
-        System.out.println("Votes  : " + winner.getVotes());
+
+        if(tieCount > 1 && winner.getVotes() > 0) {
+
+            System.out.println("Result : TIE");
+            System.out.println("The Following Candidates Are Tied With "
+                    + winner.getVotes() + " Votes Each:");
+
+            for(Candidate candidate : candidates) {
+
+                if(candidate.getVotes() == winner.getVotes()) {
+
+                    System.out.println("- "
+                            + candidate.getCandidateName()
+                            + " (" + candidate.getPartyName() + ")");
+                }
+            }
+
+        } else {
+
+            System.out.println("Winner : " + winner.getCandidateName());
+            System.out.println("Party  : " + winner.getPartyName());
+            System.out.println("Votes  : " + winner.getVotes());
+        }
+
         System.out.println("==============================");
     }
 
@@ -313,6 +431,14 @@ public class OnlineVotingSystem {
     static void addCandidate() {
 
         System.out.print("Enter Candidate ID : ");
+
+        if(!sc.hasNextInt()) {
+
+            System.out.println("Invalid Candidate ID (must be a number).");
+            sc.next();
+            return;
+        }
+
         int id = sc.nextInt();
 
         sc.nextLine();
@@ -340,6 +466,45 @@ public class OnlineVotingSystem {
 
         System.out.println("\nCandidate Added Successfully.");
     }
+
+
+    // ==============================
+    // Remove Candidate (Admin Only)
+    // ==============================
+
+    static void removeCandidate() {
+
+        System.out.print("Enter Candidate ID : ");
+
+        if(!sc.hasNextInt()) {
+
+            System.out.println("Invalid Candidate ID (must be a number).");
+            sc.next();
+            return;
+        }
+
+        int id = sc.nextInt();
+
+        for(Candidate c : candidates) {
+
+            if(c.getCandidateId() == id) {
+
+                if(c.getVotes() > 0) {
+
+                    System.out.println("Cannot Remove: This Candidate Already Has "
+                            + c.getVotes() + " Vote(s) Recorded.");
+                    return;
+                }
+
+                candidates.remove(c);
+
+                System.out.println("\nCandidate Removed Successfully.");
+                return;
+            }
+        }
+
+        System.out.println("Candidate Not Found.");
+    }
     
     // ==============================
     // Main Method
@@ -356,7 +521,7 @@ public class OnlineVotingSystem {
         do {
 
             mainMenu();
-            mainChoice = sc.nextInt();
+            mainChoice = readInt();
 
             switch(mainChoice) {
 
@@ -366,12 +531,16 @@ public class OnlineVotingSystem {
 
             case 1:
 
+                // Reset session every time User Module is entered fresh,
+                // so one person's login never carries over to the next person.
+                currentUser = null;
+
                 int userChoice;
 
                 do {
 
                     userMenu();
-                    userChoice = sc.nextInt();
+                    userChoice = readInt();
 
                     switch(userChoice) {
 
@@ -396,6 +565,7 @@ public class OnlineVotingSystem {
                         break;
 
                     case 6:
+                        currentUser = null;
                         System.out.println("Returning to Main Menu...");
                         break;
 
@@ -421,7 +591,7 @@ public class OnlineVotingSystem {
                     do {
 
                         adminMenu();
-                        adminChoice = sc.nextInt();
+                        adminChoice = readInt();
 
                         switch(adminChoice) {
 
@@ -430,14 +600,18 @@ public class OnlineVotingSystem {
                             break;
 
                         case 2:
-                            viewCandidates();
+                            removeCandidate();
                             break;
 
                         case 3:
-                            displayResult();
+                            viewCandidates();
                             break;
 
                         case 4:
+                            displayResult();
+                            break;
+
+                        case 5:
                             System.out.println("Admin Logout Successfully...");
                             break;
 
@@ -445,7 +619,7 @@ public class OnlineVotingSystem {
                             System.out.println("Invalid Choice.");
                         }
 
-                    } while(adminChoice != 4);
+                    } while(adminChoice != 5);
 
                 }
 

@@ -29,6 +29,34 @@ public class MovieTicketBookingSystem {
     static Customer currentCustomer = null;
 
 
+    // ===============================
+    // Safe Number Readers (crash-proof)
+    // ===============================
+
+    static int readInt() {
+
+        if(sc.hasNextInt()) {
+
+            return sc.nextInt();
+        }
+
+        sc.next();   // discard the invalid (non-numeric) token
+        return -1;   // sentinel value; -1 never matches a valid menu/ID
+    }
+
+
+    static double readDouble() {
+
+        if(sc.hasNextDouble()) {
+
+            return sc.nextDouble();
+        }
+
+        sc.next();
+        return -1;
+    }
+
+
 
     // ===============================
     // Main Menu
@@ -87,6 +115,13 @@ public class MovieTicketBookingSystem {
         System.out.print(
         "Enter Customer ID : ");
 
+        if(!sc.hasNextInt()) {
+
+            System.out.println("Invalid Customer ID (must be a number).");
+            sc.next();
+            return;
+        }
+
         int id = sc.nextInt();
 
 
@@ -131,11 +166,49 @@ public class MovieTicketBookingSystem {
 
 
 
-        System.out.print(
-        "Enter Age : ");
+        int age;
+
+        while(true) {
+
+            System.out.print(
+            "Enter Age : ");
+
+            if(sc.hasNextInt()) {
+
+                age = sc.nextInt();
+
+                if(age > 0) {
+                    break;
+                }
+
+                System.out.println("Invalid Age. Please Enter A Positive Number.");
+
+            } else {
+
+                System.out.println("Invalid Age. Please Enter A Number.");
+                sc.next();
+            }
+        }
 
 
-        int age = sc.nextInt();
+
+        for(Customer c : customers) {
+
+
+            if(c.getCustomerName().equalsIgnoreCase(name)
+                    &&
+               c.getAge() == age) {
+
+
+                System.out.println(
+                "Customer Already Registered (Same Name & Age Found).");
+
+
+                return;
+
+            }
+
+        }
 
 
 
@@ -155,17 +228,55 @@ public class MovieTicketBookingSystem {
 
 
 
-            phone = sc.next();
+            String enteredNumber = sc.next();
 
 
 
 
 
 
-            if(phone.matches("[6789][0-9]{9}")) {
+            if(enteredNumber.matches("[6789][0-9]{9}")) {
 
 
-                break;
+                String candidatePhone = "+91" + enteredNumber;
+
+
+
+                boolean duplicatePhone = false;
+
+
+
+                for(Customer c : customers) {
+
+                    if(c.getPhoneNumber().equals(candidatePhone)) {
+
+                        duplicatePhone = true;
+
+                        break;
+
+                    }
+
+                }
+
+
+
+                if(duplicatePhone) {
+
+
+                    System.out.println(
+                    "This Phone Number Is Already Registered.");
+
+
+                }
+
+                else {
+
+
+                    phone = candidatePhone;
+
+                    break;
+
+                }
 
 
             }
@@ -233,7 +344,53 @@ public class MovieTicketBookingSystem {
         "\nCustomer Registered Successfully.");
 
     }
-    
+
+
+    // ===============================
+    // Customer Login
+    // ===============================
+
+    static Customer customerLogin() {
+
+
+        System.out.print(
+        "Enter Customer ID : ");
+
+
+        if(!sc.hasNextInt()) {
+
+            System.out.println("Invalid Customer ID (must be a number).");
+            sc.next();
+            return null;
+        }
+
+        int id = sc.nextInt();
+
+
+        System.out.print(
+        "Enter Password : ");
+
+
+        String password = sc.next();
+
+
+        for(Customer c : customers) {
+
+            if(c.getCustomerId() == id
+                    &&
+               c.getPassword().equals(password)) {
+
+                return c;
+
+            }
+
+        }
+
+
+        return null;
+
+    }
+
     // ===============================
     // Customer Module Menu
     // ===============================
@@ -494,14 +651,54 @@ public class MovieTicketBookingSystem {
 
 
     // ===============================
+    // Select Movie By ID (helper)
+    // ===============================
+
+    static Movie selectMovieById() {
+
+
+        System.out.print(
+        "Enter Movie ID : ");
+
+
+        if(!sc.hasNextInt()) {
+
+            System.out.println("Invalid Movie ID (must be a number).");
+            sc.next();
+            return null;
+        }
+
+        int movieId = sc.nextInt();
+
+
+        for(Movie movie : movies) {
+
+            if(movie.getMovieId() == movieId) {
+
+                return movie;
+
+            }
+
+        }
+
+
+        return null;
+
+    }
+
+
+
+
+
+
+
+
+
+    // ===============================
     // Show Seat Availability
     // ===============================
 
-    static void showAvailableSeats() {
-
-
-
-        Movie movie = movies.get(0);
+    static void showAvailableSeats(Movie movie) {
 
 
 
@@ -515,6 +712,14 @@ public class MovieTicketBookingSystem {
 
         System.out.println(
         "\n===================================");
+
+
+        System.out.println(
+        "  " + movie.getMovieName());
+
+
+        System.out.println(
+        "===================================");
 
 
         System.out.println(
@@ -586,7 +791,40 @@ public class MovieTicketBookingSystem {
         "\n[ ] Available  [X] Booked");
 
     }
-    
+
+
+    // ===============================
+    // Count Available Seats (helper)
+    // ===============================
+
+    static int countAvailableSeats(Movie movie) {
+
+
+        boolean seats[][] = movie.getSeats();
+
+
+        int count = 0;
+
+
+        for(int i=0;i<seats.length;i++) {
+
+            for(int j=0;j<seats[i].length;j++) {
+
+                if(!seats[i][j]) {
+
+                    count++;
+
+                }
+
+            }
+
+        }
+
+
+        return count;
+
+    }
+
     // ===============================
     // Book Ticket
     // ===============================
@@ -602,6 +840,13 @@ public class MovieTicketBookingSystem {
         System.out.print(
         "\nEnter Movie ID : ");
 
+
+        if(!sc.hasNextInt()) {
+
+            System.out.println("Invalid Movie ID (must be a number).");
+            sc.next();
+            return;
+        }
 
         int movieId = sc.nextInt();
 
@@ -655,7 +900,25 @@ public class MovieTicketBookingSystem {
 
 
 
-        showAvailableSeats();
+        showAvailableSeats(selectedMovie);
+
+
+
+        int availableSeats =
+                countAvailableSeats(selectedMovie);
+
+
+
+        if(availableSeats == 0) {
+
+
+            System.out.println(
+            "\nNo Seats Available For This Movie.");
+
+
+            return;
+
+        }
 
 
 
@@ -667,7 +930,41 @@ public class MovieTicketBookingSystem {
         "\nHow Many Seats Do You Want : ");
 
 
+        if(!sc.hasNextInt()) {
+
+            System.out.println("Invalid Seat Count (must be a number).");
+            sc.next();
+            return;
+        }
+
         int seatCount = sc.nextInt();
+
+
+
+        if(seatCount <= 0) {
+
+
+            System.out.println(
+            "Invalid Seat Count.");
+
+
+            return;
+
+        }
+
+
+
+        if(seatCount > availableSeats) {
+
+
+            System.out.println(
+            "Only " + availableSeats +
+            " Seat(s) Available. Please Book Fewer Seats.");
+
+
+            return;
+
+        }
 
 
 
@@ -711,6 +1008,14 @@ public class MovieTicketBookingSystem {
             "Enter Seat Number : ");
 
 
+
+            if(!sc.hasNextInt()) {
+
+                System.out.println("Invalid Seat Number.");
+                sc.next();
+                i--;
+                continue;
+            }
 
             int seatNumber =
                     sc.nextInt();
@@ -976,6 +1281,9 @@ public class MovieTicketBookingSystem {
 
 
 
+            // ticket.cancelTicket() already frees up the booked seats
+            // (it has direct access to the movie field internally)
+
             ticket.cancelTicket();
 
 
@@ -1079,6 +1387,13 @@ public class MovieTicketBookingSystem {
         "Enter Movie ID : ");
 
 
+        if(!sc.hasNextInt()) {
+
+            System.out.println("Invalid Movie ID (must be a number).");
+            sc.next();
+            return;
+        }
+
         int id = sc.nextInt();
 
 
@@ -1112,6 +1427,13 @@ public class MovieTicketBookingSystem {
         System.out.print(
         "Enter Ticket Price : ");
 
+
+        if(!sc.hasNextDouble()) {
+
+            System.out.println("Invalid Ticket Price (must be a number).");
+            sc.next();
+            return;
+        }
 
         double price = sc.nextDouble();
 
@@ -1224,7 +1546,7 @@ public class MovieTicketBookingSystem {
 
 
 
-            choice = sc.nextInt();
+            choice = readInt();
 
 
 
@@ -1243,7 +1565,120 @@ public class MovieTicketBookingSystem {
 
 
 
-                registerCustomer();
+                Customer loggedInCustomer = null;
+
+
+
+                int customerAuthChoice;
+
+
+
+                do {
+
+
+
+                    System.out.println(
+                    "\n=========== CUSTOMER MODULE ===========");
+
+
+                    System.out.println(
+                    "1. Register New Customer");
+
+
+                    System.out.println(
+                    "2. Login");
+
+
+                    System.out.println(
+                    "3. Back");
+
+
+                    System.out.print(
+                    "Enter Your Choice : ");
+
+
+
+                    customerAuthChoice =
+                            readInt();
+
+
+
+                    switch(customerAuthChoice) {
+
+
+
+                    case 1:
+
+
+
+                        registerCustomer();
+
+
+                        loggedInCustomer = currentCustomer;
+
+
+                        break;
+
+
+
+
+                    case 2:
+
+
+
+                        loggedInCustomer = customerLogin();
+
+
+
+                        if(loggedInCustomer == null) {
+
+
+                            System.out.println(
+                            "Invalid Customer ID or Password.");
+
+                        }
+
+                        else {
+
+
+                            currentCustomer = loggedInCustomer;
+
+                        }
+
+
+                        break;
+
+
+
+
+                    case 3:
+
+
+                        break;
+
+
+
+                    default:
+
+                        System.out.println(
+                        "Invalid Choice.");
+
+                    }
+
+
+
+                }while(customerAuthChoice != 3
+                        &&
+                       loggedInCustomer == null);
+
+
+
+                if(loggedInCustomer == null) {
+
+
+                    break;
+
+                }
 
 
 
@@ -1263,7 +1698,7 @@ public class MovieTicketBookingSystem {
 
 
                     customerChoice =
-                            sc.nextInt();
+                            readInt();
 
 
 
@@ -1293,7 +1728,7 @@ public class MovieTicketBookingSystem {
 
 
                             movieChoice =
-                                    sc.nextInt();
+                                    readInt();
 
 
 
@@ -1325,7 +1760,33 @@ public class MovieTicketBookingSystem {
 
                             case 3:
 
-                                showAvailableSeats();
+
+
+                                viewMovies();
+
+
+
+                                Movie seatMovie =
+                                        selectMovieById();
+
+
+
+                                if(seatMovie == null) {
+
+
+                                    System.out.println(
+                                    "Movie Not Found.");
+
+                                }
+
+                                else {
+
+
+                                    showAvailableSeats(seatMovie);
+
+                                }
+
+
 
                                 break;
 
@@ -1379,7 +1840,7 @@ public class MovieTicketBookingSystem {
 
 
                             bookingChoice =
-                                    sc.nextInt();
+                                    readInt();
 
 
 
@@ -1536,7 +1997,7 @@ public class MovieTicketBookingSystem {
 
 
                         adminChoice =
-                                sc.nextInt();
+                                readInt();
 
 
 
@@ -1573,7 +2034,33 @@ public class MovieTicketBookingSystem {
 
                         case 4:
 
-                            showAvailableSeats();
+
+
+                            viewMovies();
+
+
+
+                            Movie adminSeatMovie =
+                                    selectMovieById();
+
+
+
+                            if(adminSeatMovie == null) {
+
+
+                                System.out.println(
+                                "Movie Not Found.");
+
+                            }
+
+                            else {
+
+
+                                showAvailableSeats(adminSeatMovie);
+
+                            }
+
+
 
                             break;
 
