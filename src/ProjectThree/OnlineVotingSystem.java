@@ -71,19 +71,68 @@ public class OnlineVotingSystem {
 
 
     // ==============================
-    // User Menu
+    // User Module - Entry Menu (Level 1)
     // ==============================
 
-    static void userMenu() {
+    static void userEntryMenu() {
 
         System.out.println("\n========== USER MODULE ==========");
-        System.out.println("1. Register User");
-        System.out.println("2. Login");
-        System.out.println("3. View Candidates");
-        System.out.println("4. Cast Vote");
-        System.out.println("5. View Result");
-        System.out.println("6. Back");
+        System.out.println("1. Register User (id & password)");
+        System.out.println("2. Already Registered User (id & password)");
+        System.out.println("3. Back");
         System.out.print("Enter Your Choice : ");
+
+    }
+
+
+    // ==============================
+    // User Module - Actions Menu (Level 2)
+    // ==============================
+
+    static void userActionsMenu() {
+
+        int choice;
+
+        do {
+
+            System.out.println("\n========== USER MODULE ==========");
+            System.out.println("1. Login (Cast Vote)");
+            System.out.println("2. View Candidates");
+            System.out.println("3. View Result");
+            System.out.println("4. Back");
+            System.out.print("Enter Your Choice : ");
+
+            choice = readInt();
+
+            switch(choice) {
+
+            case 1:
+
+                User user = loginUser();
+
+                if(user != null) {
+
+                    castVote(user);
+                }
+
+                break;
+
+            case 2:
+                viewCandidates();
+                break;
+
+            case 3:
+                displayResult();
+                break;
+
+            case 4:
+                break;
+
+            default:
+                System.out.println("Invalid Choice.");
+            }
+
+        } while(choice != 4);
 
     }
 
@@ -516,7 +565,6 @@ public class OnlineVotingSystem {
         addDefaultCandidates();
 
         int mainChoice;
-        User currentUser = null;
 
         do {
 
@@ -531,41 +579,31 @@ public class OnlineVotingSystem {
 
             case 1:
 
-                // Reset session every time User Module is entered fresh,
-                // so one person's login never carries over to the next person.
-                currentUser = null;
-
-                int userChoice;
+                int userEntryChoice;
 
                 do {
 
-                    userMenu();
-                    userChoice = readInt();
+                    userEntryMenu();
+                    userEntryChoice = readInt();
 
-                    switch(userChoice) {
+                    switch(userEntryChoice) {
 
                     case 1:
+
                         registerUser();
+
+                        userActionsMenu();
+
                         break;
 
                     case 2:
-                        currentUser = loginUser();
+
+                        userActionsMenu();
+
                         break;
 
                     case 3:
-                        viewCandidates();
-                        break;
 
-                    case 4:
-                        castVote(currentUser);
-                        break;
-
-                    case 5:
-                        displayResult();
-                        break;
-
-                    case 6:
-                        currentUser = null;
                         System.out.println("Returning to Main Menu...");
                         break;
 
@@ -573,7 +611,7 @@ public class OnlineVotingSystem {
                         System.out.println("Invalid Choice.");
                     }
 
-                } while(userChoice != 6);
+                } while(userEntryChoice != 3);
 
                 break;
 
